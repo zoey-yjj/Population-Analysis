@@ -39,7 +39,14 @@ case class PopulationDistribution(
 def totalPopulation(): Option[Int] =
   val dbContext = getDbContext("population", 5432)
   import dbContext._
-  ???
+  run {
+    quote {
+      query[PopulationDistribution]
+        .filter(row => row.ageGroupLow <= 65 && row.year ==2022)
+        .map(_.population)
+        .sum
+    }
+  }
 
 /**
  * EXERCISE 2: The total population of Singapore for the most recently available year (2022), by gender.
