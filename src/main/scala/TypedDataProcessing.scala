@@ -74,7 +74,17 @@ def childrenBornIn2021ByEthnicity(): List[(String, Double)] =
   val dbContext = getDbContext("population", 5432)
 
   import dbContext._
-  ???
+  run {
+    quote {
+      query[PopulationDistribution]
+        .filter(row => row.year == 2021 && row.ageGroupLow <= 65)
+        .groupByMap(_.ethnicity)(row => (row.ethnicity, sum(row.population)))
+        .join(query[BirthsDeaths]).on((l, r) => l._1 == r.ethnicity && r.year == 2021)
+        .map {
+          case ((e, pop), bd) => (e, pop * bd.birthRate)
+        }
+    }
+  }
 
 case class Temp(year: Int, population: Double)
 /**
