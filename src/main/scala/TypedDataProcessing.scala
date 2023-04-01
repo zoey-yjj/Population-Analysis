@@ -57,7 +57,13 @@ def totalPopulation(): Option[Int] =
 def totalPopulationByGender(): List[(String, Int)] =
   val dbContext = getDbContext("population", 5432)
   import dbContext._
-  ???
+  run {
+    quote {
+      query[PopulationDistribution]
+        .filter(row => row.year == 2022 && row.ageGroupLow <= 65)
+        .groupByMap(_.gender)(p => (p.gender, sum(p.population)))
+    }
+  }
 
 /**
  * EXERCISE 3: The number of children born in 2021, by ethnicity.
