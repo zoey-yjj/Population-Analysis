@@ -117,4 +117,12 @@ def growthRateYearlyVariance(): List[(Int, String, Double)] =
   val dbContext = getDbContext("population", 5432)
 
   import dbContext._
-  ???
+  run {
+    quote {
+      query[BirthsDeaths]
+        .join(query[BirthsDeaths])
+        .on((l, r) => l.year == r.year + 1 && l.ethnicity == r.ethnicity)
+        .map((l, r) => (l.year, l.ethnicity, (l.birthRate - l.deathRate) - (r.birthRate - r.deathRate)))
+        .sortBy(row => (row._1, row._2))
+    }
+  }
