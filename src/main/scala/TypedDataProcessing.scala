@@ -96,7 +96,17 @@ def childrenBornEveryYear(): List[(Int, Double)] =
   val dbContext = getDbContext("population", 5432)
 
   import dbContext._
-  ???
+  run {
+    quote {
+      query[PopulationDistribution]
+        .filter(_.ageGroupLow <= 65)
+        .join(query[BirthsDeaths]).on((l, r) => l.year == r.year && l.ethnicity == r.ethnicity)
+        .map { case (p, b) => (p.year, p.population * b.birthRate / 1000)}
+        .nested
+        .groupByMap(_._1)(row => (row._1, sum(row._2)))
+        .sortBy(_._1)
+    }
+  }
 
 /**
  * EXERCISE 5: Yearly variance of the population's growth rate, by ethnicity.
